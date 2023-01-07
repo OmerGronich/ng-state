@@ -11,7 +11,7 @@ export interface NgStatePlugin<T extends object> {
 }
 
 export class Store<T extends object> extends State<T> {
-  protected customProperties: NgStateCustomProperties = {};
+  customProperties: NgStateCustomProperties = {};
   constructor(override readonly initialState: T) {
     super(initialState);
   }

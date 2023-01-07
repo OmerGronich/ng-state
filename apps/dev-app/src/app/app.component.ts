@@ -23,7 +23,7 @@ export class TestStore extends Store<State> {
     super(initialState);
 
     this.use(resourcePlugin)
-
+    this.customProperties.status
   }
 }
 
