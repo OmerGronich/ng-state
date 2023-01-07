@@ -13,7 +13,7 @@ export class State<T> {
     this.#signal = signal(this.initialState);
 
     const dispose = effect(() => {
-      this.get();
+      console.log('this.get():', this.get());
       this.#view.markForCheck();
     });
 

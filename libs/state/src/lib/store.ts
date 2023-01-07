@@ -1,17 +1,13 @@
-import { State } from './state';
+import {State} from './state';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface NgStateCustomProperties {
 
 }
 
-export interface NgStatePlugin<T extends object> {
-  (store: Store<T>): Partial<
-    NgStateCustomProperties
-  > | void
-}
-
 export class Store<T extends object> extends State<T> {
-  customProperties: NgStateCustomProperties = {};
+  customProperties!: NgStateCustomProperties;
+
   constructor(override readonly initialState: T) {
     super(initialState);
   }
@@ -23,8 +19,14 @@ export class Store<T extends object> extends State<T> {
     });
   }
 
-  use(cb: (store: Store<T>) => object) {
-    this.customProperties = { ...cb(this) };
+  // override get(): Store<T> & NgStateCustomProperties {
+  //   return {...super.get(), ...this.customProperties}
+  // }
+
+  use(cb: (store: Store<T>) => NgStateCustomProperties) {
+    const plugin = cb(this);
+    // Object.assign(this, plugin);
+    this.customProperties = {...this.customProperties, ...plugin}
   }
 }
 
