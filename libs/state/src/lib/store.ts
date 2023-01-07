@@ -1,12 +1,15 @@
 import {State} from './state';
+import {map, Observable} from 'rxjs';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface NgStateCustomProperties {
 
 }
 
+export type CombinedState<T> = T & NgStateCustomProperties
+
 export class Store<T extends object> extends State<T> {
-  customProperties!: NgStateCustomProperties;
+  #customProperties!: NgStateCustomProperties;
 
   constructor(override readonly initialState: T) {
     super(initialState);
@@ -19,14 +22,17 @@ export class Store<T extends object> extends State<T> {
     });
   }
 
-  // override get(): Store<T> & NgStateCustomProperties {
-  //   return {...super.get(), ...this.customProperties}
-  // }
+  override get(): CombinedState<T> {
+    return {...super.get(), ...this.#customProperties}
+  }
+
+  override asObservable(): Observable<CombinedState<T>> {
+    return super.asObservable().pipe(map((storeState: T) => ({...storeState, ...this.#customProperties})));
+  }
 
   use(cb: (store: Store<T>) => NgStateCustomProperties) {
     const plugin = cb(this);
-    // Object.assign(this, plugin);
-    this.customProperties = {...this.customProperties, ...plugin}
+    this.#customProperties = {...this.#customProperties, ...plugin}
   }
 }
 
