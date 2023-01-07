@@ -39,8 +39,6 @@ export class TestStore extends Store<LocalState> {
 })
 export class AppComponent {
 
-  x = new State('yosi');
-
   get status(): Status {
     return this.store.customProperties.status()
   }
