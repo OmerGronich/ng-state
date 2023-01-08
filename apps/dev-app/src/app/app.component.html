@@ -1,1 +1,8 @@
-{{this.todoStore.get()}}
+<ng-container *ngIf="todoStore.status !== 'loading'; else loading">
+  <div *ngFor="let todo of todoStore.get().todos">
+    {{todo.title}}
+  </div>
+</ng-container>
+<ng-template #loading>
+  Loading...
+</ng-template>

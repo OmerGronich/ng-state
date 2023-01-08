@@ -1,5 +1,5 @@
-import { NgSignal, State } from './state';
-import { map, Observable } from 'rxjs';
+import { NgSignal } from './state';
+import { Observable } from 'rxjs';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface NgStateCustomState {}
@@ -10,23 +10,18 @@ export interface NgStateActions {}
 export type CombinedState<T> = T & NgStateCustomState;
 
 export class Store<T extends object> extends NgSignal<T> {
-  #customState!: NgStateCustomState;
-  #customActions!: NgStateActions;
-
-  get actions() {
-    return this.#customActions;
-  }
+  actions!: NgStateActions;
 
   constructor(initialState: T) {
     super(initialState);
   }
 
-  get(): CombinedState<T> {
-    return this.value as CombinedState<T>;
+  override get(): CombinedState<T> {
+    return super.get() as CombinedState<T>;
   }
 
   update(newValue: Partial<CombinedState<T>>) {
-    this.value = { ...this.value, ...newValue };
+    this.set({ ...this.get(), ...newValue });
   }
 
   override asObservable(): Observable<CombinedState<T>> {
@@ -35,10 +30,6 @@ export class Store<T extends object> extends NgSignal<T> {
 
   use(cb: (store: Store<T>) => NgStateActions) {
     const actions = cb(this);
-    this.#customActions = { ...this.#customActions, ...actions };
+    this.actions = { ...this.actions, ...actions };
   }
 }
-
-export const createComponentStore = <T extends object>(initialState: T) => {
-  return new Store(initialState);
-};

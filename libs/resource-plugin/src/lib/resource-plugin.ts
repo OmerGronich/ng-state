@@ -1,4 +1,4 @@
-import { NgStateActions, Store } from '@ng-state/state';
+import { NgSignal, NgStateActions, Store } from '@ng-state/state';
 import { catchError, Observable, tap } from 'rxjs';
 
 export type Status = 'idle' | 'loading' | 'error' | 'success';
@@ -10,23 +10,23 @@ declare module '@ng-state/state' {
 
   export interface NgStateActions {
     trackStatus: () => <T>(arg: Observable<T>) => Observable<T>;
+    setStatus: (status: Status) => void;
+    getStatus: () => Status;
   }
 }
 
-export function resourcePlugin<T extends object>(
-  store: Store<T>
-): NgStateActions {
-  store.value = { ...store.value, status: 'idle' };
+export function resourcePlugin<T extends object>(): NgStateActions {
+  const signal = new NgSignal<Status>('idle');
   const trackStatus =
     () =>
     <ObsT>(arg$: Observable<ObsT>) => {
-      store.value = { ...store.value, status: 'loading' };
+      signal.set('loading');
       return arg$.pipe(
         tap(() => {
-          store.value = { ...store.value, status: 'success' };
+          signal.set('success');
         }),
         catchError((err) => {
-          store.value = { ...store.value, status: 'error' };
+          signal.set('error');
           throw err;
         })
       );
@@ -34,5 +34,7 @@ export function resourcePlugin<T extends object>(
 
   return {
     trackStatus,
+    getStatus: () => signal.get(),
+    setStatus: (s: Status) => signal.set(s),
   };
 }
