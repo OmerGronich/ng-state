@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {computed, Store} from '@ng-state/state';
 import {HttpClient} from '@angular/common/http';
-import {delay} from 'rxjs';
+import {delay, startWith} from 'rxjs';
 import {resourcePlugin} from '@ng-state/resource-plugin';
 
 interface Todo {
@@ -21,7 +21,7 @@ type TodoState = typeof initialState
   providedIn: 'root'
 })
 export class TodoStoreService extends Store<TodoState> {
-  filteredTodos = computed(() => this.select('todos')().filter((todo) => todo.completed))
+  filteredTodos = computed(() => (this.value.todos || []).filter((todo) => todo.completed));
 
   constructor(private http: HttpClient) {
     super(initialState);
@@ -34,10 +34,12 @@ export class TodoStoreService extends Store<TodoState> {
 
   private getTodos() {
     this.http.get<Todo[]>('https://jsonplaceholder.typicode.com/todos').pipe(
-      delay(2500),
+      delay(1000),
       this.actions.trackStatus(),
+      startWith([])
     ).subscribe((todos) => {
-      this.update({todos})
+      console.log(todos)
+      this.value = {todos};
     })
   }
 }

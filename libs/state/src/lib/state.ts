@@ -5,6 +5,36 @@ import {ChangeDetectorRef, inject, ViewRef} from "@angular/core";
 export const effect = _effect;
 export const computed = _computed;
 
+export class NgSignal<T> extends Signal<T>{
+  #view = inject(ChangeDetectorRef) as ViewRef;
+  constructor(initialValue: T) {
+    super(initialValue);
+
+    const dispose = effect(() => {
+      this.value; // this value read triggers the effect
+      this.#view.markForCheck();
+    });
+
+    setTimeout(() => {
+      this.#view.onDestroy(() => {
+        dispose();
+      });
+    });
+  }
+
+  asObservable(): Observable<T> {
+    return new Observable<T>((subscriber) => {
+      const dispose = effect(() => {
+        subscriber.next(this.value);
+      });
+
+      return () => {
+        dispose();
+      };
+    });
+  }
+}
+
 export class State<T> {
   #signal: Signal<T>;
   #view = inject(ChangeDetectorRef) as ViewRef;

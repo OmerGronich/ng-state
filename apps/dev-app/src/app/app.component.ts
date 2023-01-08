@@ -1,5 +1,6 @@
-import {ChangeDetectionStrategy, Component, inject,} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, OnInit,} from '@angular/core';
 import {TodoStoreService} from './todo-store.service';
+import {Status} from "@ng-state/resource-plugin";
 
 @Component({
   selector: 'ng-state-root',
@@ -8,11 +9,12 @@ import {TodoStoreService} from './todo-store.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [TodoStoreService]
 })
-export class AppComponent {
-  todoStore = inject(TodoStoreService);
-  todos = this.todoStore.filteredTodos;
-  status = this.todoStore.select('status');
+export class AppComponent implements OnInit{
+  todoStore = inject(TodoStoreService)
 
+  get status(): Status {
+    return this.todoStore.get().status
+  }
 
   ngOnInit() {
     this.todoStore.init()

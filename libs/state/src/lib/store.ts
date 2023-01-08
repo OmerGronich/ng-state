@@ -1,42 +1,32 @@
-import {State} from './state';
-import {map, Observable} from 'rxjs';
+import { NgSignal, State } from './state';
+import { map, Observable } from 'rxjs';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface NgStateCustomState {
-}
+export interface NgStateCustomState {}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface NgStateActions {
-}
+export interface NgStateActions {}
 
-export type CombinedState<T> = T & NgStateCustomState
+export type CombinedState<T> = T & NgStateCustomState;
 
-
-export class Store<T extends object> extends State<T> {
+export class Store<T extends object> extends NgSignal<T> {
   #customState!: NgStateCustomState;
   #customActions!: NgStateActions;
 
   get actions() {
-    return this.#customActions
+    return this.#customActions;
   }
 
-  constructor(override readonly initialState: T) {
+  constructor(initialState: T) {
     super(initialState);
   }
 
+  get(): CombinedState<T> {
+    return this.value as CombinedState<T>;
+  }
+
   update(newValue: Partial<CombinedState<T>>) {
-    this.set({
-      ...this.get(),
-      ...newValue,
-    });
-  }
-
-  override get(): CombinedState<T> {
-    return super.get() as CombinedState<T>
-  }
-
-  select<K extends keyof CombinedState<T>>(key: K): () => CombinedState<T>[K] {
-    return () => this.get()[key]
+    this.value = { ...this.value, ...newValue };
   }
 
   override asObservable(): Observable<CombinedState<T>> {
@@ -45,7 +35,7 @@ export class Store<T extends object> extends State<T> {
 
   use(cb: (store: Store<T>) => NgStateActions) {
     const actions = cb(this);
-    this.#customActions = {...this.#customActions, ...actions};
+    this.#customActions = { ...this.#customActions, ...actions };
   }
 }
 
